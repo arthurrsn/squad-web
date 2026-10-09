@@ -33,11 +33,6 @@ Na prática, evite overengineering:
 
 O necessário inclui segurança, o básico de performance e o tratamento de erros (seções abaixo). Isso vale em toda tarefa e não conta como overengineering.
 
-## Trabalho em fatias
-
-- Implemente em fatias pequenas e sequenciais. Cada fatia deve funcionar sozinha e poder ser testada.
-- Não adiante a fatia seguinte. Termine e me avise; eu documento na wiki antes de seguirmos.
-
 ## Estrutura (feature first)
 
 ```
