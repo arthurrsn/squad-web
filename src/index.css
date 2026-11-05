@@ -149,4 +149,12 @@ select {
 
 .dia p { margin: 0; }
 
+.etiqueta { font: 600 12px/1.4 var(--font-ui); letter-spacing: 0.08em; }
+
+button.perigo { color: var(--danger); background: var(--surface-raised); border-color: var(--danger); }
+
+.dia-agenda { display: grid; gap: var(--space-2); margin-top: var(--space-6); }
+
+.dia-agenda p { margin: 0; }
+
 .periodo { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-2); }

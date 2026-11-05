@@ -3,6 +3,7 @@ import { codigoDoErro } from '../../core/api/erros.ts'
 import { navegar, useCaminho } from '../../core/caminho.ts'
 import { Link } from '../../core/Link'
 import { limparSessao, quandoPerderSessao, tokenDaSessao } from '../../core/sessao.ts'
+import { AgendaPage } from './AgendaPage'
 import { meusLocais, sair, type Local } from './api.ts'
 import { EntrarPage } from './EntrarPage'
 import { mensagemDoErro } from './erros.ts'
@@ -122,6 +123,15 @@ function Tela({ rota, locais, aoSalvar }: { rota: Rota; locais: Local[]; aoSalva
       const quadra = local?.quadras.find((q) => q.id === rota.quadraId)
       return local && quadra ? (
         <QuadraForm key={quadra.id} local={local} quadra={quadra} aoSalvar={aoSalvar} />
+      ) : (
+        <NaoEncontrada />
+      )
+    }
+    case 'agenda': {
+      const local = locais.find((l) => l.quadras.some((q) => q.id === rota.quadraId))
+      const quadra = local?.quadras.find((q) => q.id === rota.quadraId)
+      return local && quadra ? (
+        <AgendaPage key={quadra.id} local={local} quadra={quadra} de={rota.de} />
       ) : (
         <NaoEncontrada />
       )
