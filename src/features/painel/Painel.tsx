@@ -6,7 +6,9 @@ import { limparSessao, quandoPerderSessao, tokenDaSessao } from '../../core/sess
 import { meusLocais, sair, type Local } from './api.ts'
 import { EntrarPage } from './EntrarPage'
 import { mensagemDoErro } from './erros.ts'
+import { LocalForm } from './LocalForm'
 import { MeusLocais } from './MeusLocais'
+import { QuadraForm } from './QuadraForm'
 import { rotaDoPainel, type Rota } from './rotas.ts'
 
 const NAO_E_DONO =
@@ -67,6 +69,11 @@ export function Painel() {
     setLogado(true)
   }
 
+  function aoSalvar() {
+    setLocais(undefined)
+    navegar('/painel')
+  }
+
   function tentarDeNovo() {
     setErro(undefined)
     setTentativa((t) => t + 1)
@@ -88,7 +95,7 @@ export function Painel() {
           <button type="button" onClick={tentarDeNovo}>Tentar de novo</button>
         </>
       ) : locais ? (
-        <Tela rota={rota} locais={locais} />
+        <Tela rota={rota} locais={locais} aoSalvar={aoSalvar} />
       ) : (
         <p role="status">Carregando…</p>
       )}
@@ -96,18 +103,41 @@ export function Painel() {
   )
 }
 
-function Tela({ rota, locais }: { rota: Rota; locais: Local[] }) {
+function Tela({ rota, locais, aoSalvar }: { rota: Rota; locais: Local[]; aoSalvar: () => void }) {
   switch (rota.tela) {
     case 'locais':
       return <MeusLocais locais={locais} />
+    case 'novoLocal':
+      return <LocalForm key="novo" aoSalvar={aoSalvar} />
+    case 'local': {
+      const local = locais.find((l) => l.id === rota.localId)
+      return local ? <LocalForm key={local.id} local={local} aoSalvar={aoSalvar} /> : <NaoEncontrada />
+    }
+    case 'novaQuadra': {
+      const local = locais.find((l) => l.id === rota.localId)
+      return local ? <QuadraForm key={`nova-${local.id}`} local={local} aoSalvar={aoSalvar} /> : <NaoEncontrada />
+    }
+    case 'quadra': {
+      const local = locais.find((l) => l.id === rota.localId)
+      const quadra = local?.quadras.find((q) => q.id === rota.quadraId)
+      return local && quadra ? (
+        <QuadraForm key={quadra.id} local={local} quadra={quadra} aoSalvar={aoSalvar} />
+      ) : (
+        <NaoEncontrada />
+      )
+    }
     case 'entrar':
       return null
     default:
-      return (
-        <>
-          <h1>Não encontramos essa página.</h1>
-          <Link para="/painel">Voltar aos meus locais</Link>
-        </>
-      )
+      return <NaoEncontrada />
   }
+}
+
+function NaoEncontrada() {
+  return (
+    <>
+      <h1>Não encontramos essa página.</h1>
+      <Link para="/painel">Voltar aos meus locais</Link>
+    </>
+  )
 }
