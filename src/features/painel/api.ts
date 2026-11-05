@@ -1,4 +1,4 @@
-import { get, post, put } from '../../core/api/http.ts'
+import { del, get, post, put } from '../../core/api/http.ts'
 
 export type Esporte = 'FUTEBOL' | 'VOLEI' | 'FUTEVOLEI'
 
@@ -41,3 +41,34 @@ export const criarQuadra = (localId: string, quadra: QuadraInformada) =>
 
 export const editarQuadra = (localId: string, quadraId: string, quadra: QuadraInformada) =>
   put<unknown>(`/locais/${localId}/quadras/${quadraId}`, quadra)
+
+export type Pessoa = { userId: string; nome: string | null; sobrenome: string | null; arroba: string | null }
+
+export type ReservaNaAgenda = {
+  id: string
+  inicio: string
+  fim: string
+  origem: 'PARTIDA' | 'JOGO'
+  partidaId: string | null
+  jogoId: string | null
+  reservadoPor: Pessoa
+  criadaEm: string
+  canceladaEm: string | null
+  canceladaPor: 'ORGANIZADOR' | 'DONO' | 'TROCA' | null
+  motivo: string | null
+}
+
+export type Bloqueio = { id: string; inicio: string; fim: string; motivo: string | null }
+
+export type Agenda = { reservas: ReservaNaAgenda[]; bloqueios: Bloqueio[] }
+
+export const agendaDaSemana = (quadraId: string, segunda: string, sinal?: AbortSignal) =>
+  get<Partial<Agenda> | null>(`/quadras/${quadraId}/agenda?de=${segunda}&dias=7`, sinal)
+
+export const bloquear = (quadraId: string, bloqueio: { inicio: string; fim: string; motivo: string | null }) =>
+  post<unknown>(`/quadras/${quadraId}/bloqueios`, bloqueio)
+
+export const desbloquear = (quadraId: string, bloqueioId: string) => del(`/quadras/${quadraId}/bloqueios/${bloqueioId}`)
+
+export const cancelarReserva = (reservaId: string, motivo: string | null) =>
+  post<unknown>(`/reservas/${reservaId}/cancelamento`, { motivo })
