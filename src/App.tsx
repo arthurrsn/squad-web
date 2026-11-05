@@ -1,9 +1,11 @@
 import { Mensagem, VerificarEmailPage } from './features/auth/VerificarEmailPage'
 import { RedefinirSenhaPage } from './features/auth/RedefinirSenhaPage'
 import { DocumentoLegal } from './features/legal/DocumentoLegal'
+import { Painel } from './features/painel/Painel'
 
-// Quatro páginas fixas: o caminho da URL basta, sem roteador.
+// As páginas fixas saem do caminho da URL; o painel trata os caminhos dele em features/painel/rotas.ts.
 export default function App() {
+  if (location.pathname === '/painel' || location.pathname.startsWith('/painel/')) return <Painel />
   switch (location.pathname) {
     case '/verificar-email':
       return <VerificarEmailPage />

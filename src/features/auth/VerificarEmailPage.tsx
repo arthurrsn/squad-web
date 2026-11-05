@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { post } from '../../core/api/http'
-import { CampoSenha } from './CampoSenha'
-import { LINK_INVALIDO, codigoDoErro, mensagemGeral } from './erros'
+import { CampoSenha } from '../../core/CampoSenha'
+import { codigoDoErro } from '../../core/api/erros'
+import { LINK_INVALIDO, mensagemGeral } from './erros'
 import { tokenDoLink } from './linkToken'
 
 export function VerificarEmailPage() {
