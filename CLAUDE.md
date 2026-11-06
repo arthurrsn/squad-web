@@ -2,7 +2,7 @@
 
 ## Contexto
 
-Squad é um app social de esportes. Este repositório é o front-end web, feito em React + TypeScript (Vite), hospedado na Vercel. Ele consome a API do backend (`squad\squad-backend`). Por enquanto é pequeno: serve às páginas abertas por links de e-mail (verificação de e-mail e redefinição de senha), que o app mobile (`squad\squad-mobile`) não atende. O projeto está em fase de MVP, mas pode ter crescimento exponencial de usuários. Por isso performance, segurança e a carga que o front gera no backend são tratadas com cuidado desde o início.
+Squad é um app social de esportes. Este repositório é o front-end web, feito em React + TypeScript (Vite), hospedado na Vercel. Ele consome a API do backend (`squad\squad-backend`). Serve ao que o app mobile (`squad\squad-mobile`) não atende: as páginas abertas por links de e-mail (verificação de e-mail e redefinição de senha), os documentos legais (`/termos`, `/privacidade`) e o painel do dono de quadra (`/painel`). O projeto está em fase de MVP, mas pode ter crescimento exponencial de usuários. Por isso performance, segurança e a carga que o front gera no backend são tratadas com cuidado desde o início.
 
 ## Stack
 
@@ -40,7 +40,7 @@ src/
 ├── core/          # o que é compartilhado: cliente HTTP, tema, utilitários
 │   └── api/
 └── features/
-    └── <feature>/ # ex.: auth (verificar e-mail, redefinir senha)
+    └── <feature>/ # auth, legal, painel
 ```
 
 - Cada feature guarda suas próprias páginas, componentes, chamadas à API e tipos. Uma feature não importa de dentro de outra; o que for usado por duas vai para `core`.
@@ -86,7 +86,7 @@ Cada elemento gráfico precisa servir à identidade, à hierarquia ou à intera�
 - TypeScript em modo `strict`: sem `any`; tipe as respostas da API na fronteira.
 - Siga o estilo e a estrutura que já existem antes de introduzir outros. Não introduza novos avisos do lint (`npm run lint`).
 - Trate erros explicitamente, sem engolir exceções em silêncio.
-- Escreva testes focados no que custa caro se falhar (fluxos críticos e tratamento de erro da API). Não persiga cobertura total. Se o projeto ainda não tiver ferramenta de teste, proponha uma antes de instalar.
+- Escreva testes focados no que custa caro se falhar (fluxos críticos e tratamento de erro da API). Não persiga cobertura total. Os testes rodam no `node --test` (`npm test`), só para funções puras; para testar componente, proponha a ferramenta antes de instalar.
 - Sem comentários que só repetem o código. Comente o "porquê" quando não for óbvio.
 
 ## Git
@@ -102,5 +102,5 @@ Cada elemento gráfico precisa servir à identidade, à hierarquia ou à intera�
 
 ## Ao terminar uma tarefa
 
-1. Rode `npm run build` e `npm run lint` e diga o resultado.
+1. Rode `npm run build`, `npm run lint` e `npm test` e diga o resultado.
 2. Resuma em poucas linhas o que mudou e o que ficou de fora de propósito, destacando o que altera o comportamento visível ou depende da API, para eu documentar na wiki.
