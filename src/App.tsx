@@ -1,3 +1,4 @@
+import { LandingPage } from './features/landing/LandingPage'
 import { DocumentoLegal } from './features/legal/DocumentoLegal'
 import { Painel } from './features/painel/Painel'
 
@@ -11,11 +12,6 @@ export default function App() {
     case '/privacidade':
       return <DocumentoLegal titulo="Política de Privacidade" />
     default:
-      return (
-        <main>
-          <h1>Squad</h1>
-          <p role="status">Baixe o app para entrar na Squad.</p>
-        </main>
-      )
+      return <LandingPage />
   }
 }
