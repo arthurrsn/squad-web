@@ -80,6 +80,10 @@ Cada elemento gráfico precisa servir à identidade, à hierarquia ou à intera�
 - Não gere carga desnecessária no backend: sem chamadas repetidas ou em loop, sem polling, sem refazer a cada renderização uma requisição que já foi feita.
 - Sem trabalho pesado durante a renderização. Imagens no tamanho necessário.
 
+## Tempo de resposta (padrão do sistema)
+
+O padrão completo está em `squad-wiki/sistema/tempo-de-resposta.md`: todo clique responde na hora (o botão mostra o progresso e se desabilita), a resposta chega em até 1 s, e cada ação faz o mínimo de idas ao servidor em sequência.
+
 ## Código e testes
 
 - TypeScript em modo `strict`: sem `any`; tipe as respostas da API na fronteira.
