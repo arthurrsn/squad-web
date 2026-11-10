@@ -1,6 +1,6 @@
 # Squad Web
 
-Front-end web simples da Squad (React + TypeScript + Vite). Serve à página aberta pelo link de verificação de e-mail, aos documentos legais e ao painel do dono de quadra (`/painel`). Consome a API do `squad-backend`.
+Front-end web simples da Squad (React + TypeScript + Vite). Serve à landing page (`/`), à página aberta pelo link de verificação de e-mail, aos documentos legais e ao painel do dono de quadra (`/painel`). Consome a API do `squad-backend`. O número do WhatsApp da equipe e os links das lojas ficam em `src/features/landing/lancamento.ts`, até o lançamento valendo `null`.
 
 ```bash
 cp .env.example .env.local   # ajuste VITE_API_URL; o .gitignore ignora *.local
