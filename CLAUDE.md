@@ -2,7 +2,7 @@
 
 ## Contexto
 
-Squad é um app social de esportes. Este repositório é o front-end web, feito em React + TypeScript (Vite), hospedado na Vercel. Ele consome a API do backend (`squad\squad-backend`). Serve ao que o app mobile (`squad\squad-mobile`) não atende: as páginas abertas por links de e-mail (verificação de e-mail e redefinição de senha), os documentos legais (`/termos`, `/privacidade`) e o painel do dono de quadra (`/painel`). O projeto está em fase de MVP, mas pode ter crescimento exponencial de usuários. Por isso performance, segurança e a carga que o front gera no backend são tratadas com cuidado desde o início.
+Squad é um app social de esportes. Este repositório é o front-end web, feito em React + TypeScript (Vite), hospedado na Vercel. Ele consome a API do backend (`squad\squad-backend`). Serve ao que o app mobile (`squad\squad-mobile`) não atende: a página aberta pelo link de verificação de e-mail, os documentos legais (`/termos`, `/privacidade`) e o painel do dono de quadra (`/painel`). O projeto está em fase de MVP, mas pode ter crescimento exponencial de usuários. Por isso performance, segurança e a carga que o front gera no backend são tratadas com cuidado desde o início.
 
 ## Stack
 
@@ -60,7 +60,7 @@ Cada elemento gráfico precisa servir à identidade, à hierarquia ou à intera�
 
 - O navegador não é um lugar confiável. Validação no front é só conveniência de UX; a regra de verdade é do servidor.
 - Nenhum segredo no front: tudo que entra no bundle (`VITE_*`) é público. Só a URL da API vai em variável de ambiente; documente-a no `.env.example`, sem valores reais. Nunca commite `.env`.
-- Tokens vindos de link de e-mail (verificação, redefinição de senha) são sensíveis: não logue, não envie a terceiros (nada de analytics ou fontes externas que recebam a URL), e remova-os da URL (`history.replaceState`) depois de lidos.
+- Tokens vindos de link de e-mail (verificação) são sensíveis: não logue, não envie a terceiros (nada de analytics ou fontes externas que recebam a URL), e remova-os da URL (`history.replaceState`) depois de lidos.
 - Nunca use `dangerouslySetInnerHTML` com conteúdo que não seja seu. Nunca injete resposta da API como HTML.
 - Nunca logue senha, token ou dado pessoal, nem em `console.log` de debug.
 - Toda comunicação por HTTPS. Não desabilite validação de certificado nem coloque URL de API fixa no código.
