@@ -1,3 +1,18 @@
+@font-face {
+  font-family: 'Sora';
+  src: url('./assets/fontes/Sora.woff2') format('woff2');
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('./assets/fontes/IBMPlexSans.woff2') format('woff2');
+  font-weight: 100 700;
+  font-stretch: 75% 100%;
+  font-display: swap;
+}
+
 /* Tokens do design system (squad-wiki/design/design-system.md), com os mesmos
    valores do app (squad-mobile/lib/core/theme/tema.dart). */
 :root {
