@@ -1,4 +1,5 @@
-import { Mensagem, VerificarEmailPage } from './features/auth/VerificarEmailPage'
+import { VerificarEmailPage } from './features/auth/VerificarEmailPage'
+import { LandingPage } from './features/landing/LandingPage'
 import { DocumentoLegal } from './features/legal/DocumentoLegal'
 import { Painel } from './features/painel/Painel'
 
@@ -13,6 +14,6 @@ export default function App() {
     case '/privacidade':
       return <DocumentoLegal titulo="Política de Privacidade" />
     default:
-      return <Mensagem titulo="Squad" texto="Baixe o app para entrar na Squad." />
+      return <LandingPage />
   }
 }
