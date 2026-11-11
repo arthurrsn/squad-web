@@ -13,8 +13,15 @@ export class ApiError extends Error {
   }
 }
 
-async function chamar<T>(metodo: string, caminho: string, dados?: unknown, sinal?: AbortSignal): Promise<T> {
-  const token = tokenDaSessao()
+async function chamar<T>(
+  metodo: string,
+  caminho: string,
+  dados?: unknown,
+  sinal?: AbortSignal,
+  proprio?: { token: string | null },
+): Promise<T> {
+  // Com um token próprio (a exclusão de conta), a sessão do painel não entra nem é derrubada por um 401.
+  const token = proprio ? proprio.token : tokenDaSessao()
   const headers: Record<string, string> = {}
   if (dados !== undefined) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
@@ -26,7 +33,7 @@ async function chamar<T>(metodo: string, caminho: string, dados?: unknown, sinal
     signal: sinal ? AbortSignal.any([tempo, sinal]) : tempo,
   })
   const body = await res.json().catch(() => null)
-  if (res.status === 401 && token) perderSessao()
+  if (res.status === 401 && token && !proprio) perderSessao()
   if (!res.ok) throw new ApiError(res.status, body)
   return body as T
 }
@@ -35,3 +42,5 @@ export const get = <T>(caminho: string, sinal?: AbortSignal) => chamar<T>('GET',
 export const post = <T>(caminho: string, dados: unknown) => chamar<T>('POST', caminho, dados)
 export const put = <T>(caminho: string, dados: unknown) => chamar<T>('PUT', caminho, dados)
 export const del = (caminho: string) => chamar<void>('DELETE', caminho)
+export const postComToken = <T>(caminho: string, dados: unknown, token: string | null) =>
+  chamar<T>('POST', caminho, dados, undefined, { token })
