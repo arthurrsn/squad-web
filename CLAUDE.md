@@ -2,7 +2,7 @@
 
 ## Contexto
 
-Squad é um app social de esportes. Este repositório é o front-end web, feito em React + TypeScript (Vite), hospedado na Vercel. Ele consome a API do backend (`squad\squad-backend`). Serve ao que o app mobile (`squad\squad-mobile`) não atende: a landing page (`/`), os documentos legais (`/termos`, `/privacidade`) e o painel do dono de quadra (`/painel`). O projeto está em fase de MVP, mas pode ter crescimento exponencial de usuários. Por isso performance, segurança e a carga que o front gera no backend são tratadas com cuidado desde o início.
+Squad é um app social de esportes. Este repositório é o front-end web, feito em React + TypeScript (Vite), hospedado na Vercel. Ele consome a API do backend (`squad\squad-backend`). Serve ao que o app mobile (`squad\squad-mobile`) não atende: a landing page (`/`), os documentos legais (`/termos`, `/privacidade`), a exclusão de conta sem o app (`/excluir-conta`) e o painel do dono de quadra (`/painel`). O projeto está em fase de MVP, mas pode ter crescimento exponencial de usuários. Por isso performance, segurança e a carga que o front gera no backend são tratadas com cuidado desde o início.
 
 ## Stack
 
@@ -40,7 +40,7 @@ src/
 ├── core/          # o que é compartilhado: cliente HTTP, tema, utilitários
 │   └── api/
 └── features/
-    └── <feature>/ # landing, legal, painel
+    └── <feature>/ # conta, landing, legal, painel
 ```
 
 - Cada feature guarda suas próprias páginas, componentes, chamadas à API e tipos. Uma feature não importa de dentro de outra; o que for usado por duas vai para `core`.
