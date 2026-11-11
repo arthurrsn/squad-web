@@ -1,3 +1,4 @@
+import { ExcluirContaPage } from './features/conta/ExcluirContaPage'
 import { LandingPage } from './features/landing/LandingPage'
 import { DocumentoLegal } from './features/legal/DocumentoLegal'
 import { Painel } from './features/painel/Painel'
@@ -11,6 +12,8 @@ export default function App() {
       return <DocumentoLegal titulo="Termos de Uso" />
     case '/privacidade':
       return <DocumentoLegal titulo="Política de Privacidade" />
+    case '/excluir-conta':
+      return <ExcluirContaPage />
     default:
       return <LandingPage />
   }

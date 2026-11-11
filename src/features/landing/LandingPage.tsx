@@ -67,6 +67,7 @@ export function LandingPage() {
         <nav aria-label="Documentos">
           <a href="/termos">Termos de Uso</a>
           <a href="/privacidade">Política de Privacidade</a>
+          <a href="/excluir-conta">Excluir conta</a>
         </nav>
         <p>A Squad é para maiores de 18 anos.</p>
       </footer>
