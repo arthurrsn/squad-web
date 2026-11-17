@@ -104,7 +104,8 @@ button:disabled { opacity: 0.6; cursor: default; }
 
 .erro { color: var(--danger); margin: 0; font-size: 14px; }
 
-main.painel { max-width: 720px; }
+main.painel,
+main.admin { max-width: 720px; }
 
 .topo {
   display: flex;
@@ -138,6 +139,23 @@ a {
 .lista li { display: grid; gap: var(--space-2); }
 
 .acoes { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
+
+.cartao { justify-items: start; padding-top: var(--space-5); border-top: 1px solid var(--border-strong); }
+
+.cartao p { margin: 0; }
+
+.foto-denunciada { width: 96px; height: 96px; object-fit: cover; border-radius: var(--radius-md); }
+
+.copia { display: grid; gap: var(--space-2); width: 100%; margin: 0; }
+
+.copia dt { font-weight: 600; font-size: 14px; }
+
+.copia dd,
+.denuncias p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.denuncias { display: grid; gap: var(--space-2); width: 100%; margin: 0; padding-left: 1.25em; }
+
+.lista .denuncias li { display: list-item; }
 
 .campo { display: grid; gap: var(--space-2); }
 
