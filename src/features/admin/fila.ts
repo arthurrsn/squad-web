@@ -2,7 +2,14 @@ import { ApiError } from '../../core/api/http.ts'
 
 export type Alvo = 'PERFIL' | 'PARTIDA' | 'CAMPEONATO' | 'TIME'
 
-export type Autor = { nome: string | null; sobrenome: string | null; arroba: string | null; fotoUrl: string | null }
+/** {@code bloqueadaPor} é quantas pessoas bloquearam o autor, só o número (ADR-042). */
+export type Autor = {
+  nome: string | null
+  sobrenome: string | null
+  arroba: string | null
+  fotoUrl: string | null
+  bloqueadaPor: number
+}
 
 export type Denuncia = { motivo: string; comentario: string | null; criadaEm: string }
 
@@ -15,7 +22,16 @@ export type Cartao = {
   denuncias: Denuncia[]
 }
 
-export type Decisao = 'arquivar' | 'remover'
+export type Decisao = 'arquivar' | 'remover' | 'suspender' | 'banir'
+
+/** O que a equipe marca para sair de um perfil denunciado. */
+export type Parte = 'BIO_E_FOTO' | 'ARROBA' | 'NOME'
+
+export const PARTES: { parte: Parte; rotulo: string }[] = [
+  { parte: 'BIO_E_FOTO', rotulo: 'Bio e foto' },
+  { parte: 'ARROBA', rotulo: '@' },
+  { parte: 'NOME', rotulo: 'Nome' },
+]
 
 /** O mesmo limite de alvos por vez do backend (ModeracaoService). */
 export const ALVOS_POR_VEZ = 50
@@ -58,7 +74,10 @@ const REMOVER: Record<Alvo, string> = {
   TIME: 'Nas inscrições, o time sai do campeonato. Depois do sorteio, o nome vira "Time" com um número.',
 }
 
-const texto = (valor: unknown): string | null => (typeof valor === 'string' ? valor : null)
+export const texto = (valor: unknown): string | null => (typeof valor === 'string' ? valor : null)
+
+export const quantos = (valor: unknown): number =>
+  typeof valor === 'number' && Number.isInteger(valor) && valor > 0 ? valor : 0
 
 function lerCartao(item: unknown): Cartao | null {
   if (!item || typeof item !== 'object') return null
@@ -87,6 +106,7 @@ function lerCartao(item: unknown): Cartao | null {
       sobrenome: texto(autor.sobrenome),
       arroba: texto(autor.arroba),
       fotoUrl: texto(autor.fotoUrl),
+      bloqueadaPor: quantos(autor.bloqueadaPor),
     },
     copia,
     denuncias,
@@ -119,6 +139,17 @@ export function nomeDoAutor(autor: Autor): string {
   const nome = [autor.nome, autor.sobrenome].filter(Boolean).join(' ')
   if (!nome) return 'Conta apagada'
   return autor.arroba ? `${nome} (@${autor.arroba})` : nome
+}
+
+/** Vazio quando ninguém bloqueou: a fila só fala do bloqueio quando ele existe. */
+export function bloqueios(bloqueadaPor: number): string {
+  if (bloqueadaPor <= 0) return ''
+  return bloqueadaPor === 1 ? 'Bloqueada por 1 pessoa' : `Bloqueada por ${bloqueadaPor} pessoas`
+}
+
+/** Suspender e banir só quando a conta do autor ainda existe: a apagada vem sem nome. */
+export function autorPodeSerPunido(autor: Autor): boolean {
+  return autor.nome !== null
 }
 
 /** Os textos da cópia na ordem que o backend mandou, sem os vazios e sem a foto, que aparece como imagem. */
@@ -156,6 +187,21 @@ export function quando(instante: string): string {
 export function textoDaConfirmacao(decisao: Decisao, alvo: Alvo): string {
   if (decisao === 'arquivar') return 'As denúncias saem da fila e nada muda no conteúdo.'
   return REMOVER[alvo]
+}
+
+/** O que acontece com o perfil, conforme as partes marcadas. */
+export function textoDaRemocaoDoPerfil(partes: Parte[]): string {
+  if (partes.length === 0) return 'Marque o que sai do perfil.'
+  const frases: string[] = []
+  if (partes.includes('BIO_E_FOTO')) frases.push('A bio e a foto saem do perfil.')
+  if (partes.includes('ARROBA')) frases.push('O @ vira um provisório, que a pessoa troca na hora.')
+  if (partes.includes('NOME')) frases.push('O nome vira "Nome removido", que a pessoa troca na hora.')
+  const ficaONome = !partes.includes('NOME')
+  const ficaOArroba = !partes.includes('ARROBA')
+  if (ficaONome && ficaOArroba) frases.push('O nome e o @ continuam.')
+  else if (ficaONome) frases.push('O nome continua.')
+  else if (ficaOArroba) frases.push('O @ continua.')
+  return frases.join(' ')
 }
 
 export function mensagemDoErro(e: unknown): string {
