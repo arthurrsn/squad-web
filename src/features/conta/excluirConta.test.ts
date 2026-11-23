@@ -15,6 +15,14 @@ test('conta sem o e-mail confirmado é mandada para o app', () => {
   assert.match(mensagemDaExclusao(erro), /Confirme o e-mail no app/)
 })
 
+test('conta suspensa e e-mail banido mostram o texto do servidor', () => {
+  const suspensa = 'Sua conta está suspensa até 26/11/2026 às 14:00, por ofensa ou assédio.'
+  assert.equal(mensagemDaExclusao(new ApiError(403, { codigo: 'CONTA_SUSPENSA', mensagem: suspensa })), suspensa)
+  const banido = 'Este e-mail não pode ser usado na Squad: a conta foi encerrada pela equipe.'
+  assert.equal(mensagemDaExclusao(new ApiError(403, { codigo: 'EMAIL_BANIDO', mensagem: banido })), banido)
+  assert.equal(mensagemDaExclusao(new ApiError(403, { codigo: 'EMAIL_BANIDO' })), 'Algo deu errado. Tenta de novo.')
+})
+
 test('limite, falha do servidor, falha de rede e erro desconhecido', () => {
   assert.equal(mensagemDaExclusao(new ApiError(429, null)), 'Muitas tentativas. Espera um pouco e tenta de novo.')
   assert.equal(mensagemDaExclusao(new ApiError(500, { mensagem: 'NullPointerException' })), SEM_SERVIDOR)

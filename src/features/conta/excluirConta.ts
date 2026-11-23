@@ -22,6 +22,11 @@ export function mensagemDaExclusao(e: unknown): string {
   if (codigo === 'EMAIL_NAO_VERIFICADO') {
     return 'Esta conta ainda não foi confirmada. Confirme o e-mail no app para entrar e excluir.'
   }
+  // A data de volta, o motivo e o contato do recurso vêm prontos do servidor (ADR-042).
+  if (codigo === 'CONTA_SUSPENSA' || codigo === 'EMAIL_BANIDO') {
+    const mensagem = e instanceof ApiError ? (e.body as { mensagem?: unknown } | null)?.mensagem : undefined
+    if (typeof mensagem === 'string' && mensagem.trim()) return mensagem
+  }
   if (!(e instanceof ApiError) || e.status >= 500) return SEM_SERVIDOR
   if (e.status === 429) return 'Muitas tentativas. Espera um pouco e tenta de novo.'
   return 'Algo deu errado. Tenta de novo.'
