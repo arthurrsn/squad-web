@@ -179,6 +179,17 @@ select {
   border-radius: var(--radius-md);
 }
 
+textarea {
+  min-height: 88px;
+  padding: 8px 12px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  resize: vertical;
+}
+
 .grade { gap: var(--space-5); }
 
 .dia p { margin: 0; }

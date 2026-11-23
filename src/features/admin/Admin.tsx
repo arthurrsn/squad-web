@@ -1,10 +1,15 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { CampoSenha } from '../../core/CampoSenha'
+import { Link } from '../../core/Link.tsx'
 import { codigoDoErro } from '../../core/api/erros.ts'
 import { navegar, useCaminho } from '../../core/caminho.ts'
 import { guardarSessao, limparSessao, quandoPerderSessao, tokenDaSessao } from '../../core/sessao.ts'
-import { arquivar, buscarFila, entrar, remover, sair } from './api.ts'
+import { arquivar, banirPelaFila, buscarFila, entrar, remover, sair, suspenderPelaFila } from './api.ts'
+import { Contas } from './Contas.tsx'
+import { enderecoDaBusca, type DadosDaPunicao } from './contas.ts'
 import {
+  autorPodeSerPunido,
+  bloqueios,
   fotoDaCopia,
   lerFila,
   mensagemDoErro,
@@ -12,16 +17,20 @@ import {
   quando,
   rotuloDoMotivo,
   textoDaConfirmacao,
+  textoDaRemocaoDoPerfil,
   textosDaCopia,
   tipoDoAlvo,
   tituloDaFila,
   tituloDoCartao,
   type Cartao,
   type Decisao,
+  type Parte,
 } from './fila.ts'
+import { PartesDoPerfil, Punir } from './Punir.tsx'
 
 const NAO_E_DA_EQUIPE = 'Esta conta não é da equipe da Squad.'
 const SESSAO_ACABOU = 'Sua sessão acabou. Entre de novo.'
+const PAGINAS = ['/admin', '/admin/contas']
 
 export function Admin() {
   const caminho = useCaminho().split('?')[0].replace(/\/+$/, '')
@@ -44,12 +53,12 @@ export function Admin() {
   )
 
   useEffect(() => {
-    if (logado && caminho !== '/admin') navegar('/admin', true)
+    if (logado && !PAGINAS.includes(caminho)) navegar('/admin', true)
     if (!logado && caminho !== '/admin/entrar') navegar('/admin/entrar', true)
   }, [logado, caminho])
 
   useEffect(() => {
-    if (!logado || cartoes) return
+    if (!logado || cartoes || caminho !== '/admin') return
     const controle = new AbortController()
     buscarFila(controle.signal)
       .then((corpo) => setCartoes(lerFila(corpo)))
@@ -59,7 +68,10 @@ export function Admin() {
         else setErro(mensagemDoErro(e))
       })
     return () => controle.abort()
-  }, [logado, cartoes, tentativa])
+  }, [logado, cartoes, tentativa, caminho])
+
+  // Estável entre renderizações: a página Contas busca a conta num efeito que depende dela.
+  const perderAcesso = useCallback(() => void encerrar(NAO_E_DA_EQUIPE), [])
 
   async function encerrar(novoAviso?: string) {
     setSaindo(true)
@@ -79,8 +91,14 @@ export function Admin() {
     setLogado(true)
   }
 
-  // A fila volta ao servidor só quando esvazia: pode haver mais alvos além dos que vieram.
-  function aoResolver(cartao: Cartao, novoAviso?: string) {
+  // A fila volta ao servidor só quando esvazia: pode haver mais alvos além dos que vieram. O banimento resolve
+  // também os outros cartões da mesma pessoa, então depois dele a fila é buscada de novo.
+  function aoResolver(cartao: Cartao, novoAviso?: string, recarregar = false) {
+    if (recarregar) {
+      setAvisoDaFila(novoAviso)
+      setCartoes(undefined)
+      return
+    }
     setAvisoDaFila(novoAviso)
     setCartoes((atuais) => {
       const resto = atuais?.filter((c) => c.alvo !== cartao.alvo || c.alvoId !== cartao.alvoId)
@@ -103,7 +121,13 @@ export function Admin() {
           {saindo ? 'Saindo…' : 'Sair'}
         </button>
       </header>
-      {erro ? (
+      <nav className="acoes" aria-label="Áreas da equipe">
+        <Link para="/admin">Denúncias</Link>
+        <Link para="/admin/contas">Contas</Link>
+      </nav>
+      {caminho === '/admin/contas' ? (
+        <Contas aoPerderAcesso={perderAcesso} aoPunir={() => setCartoes(undefined)} />
+      ) : erro ? (
         <>
           <p className="erro" role="alert">{erro}</p>
           <button type="button" onClick={tentarDeNovo}>Tentar de novo</button>
@@ -117,7 +141,11 @@ export function Admin() {
           ) : (
             <ul className="lista">
               {cartoes.map((c) => (
-                <CartaoDaFila key={`${c.alvo}-${c.alvoId}`} cartao={c} aoResolver={(a) => aoResolver(c, a)} />
+                <CartaoDaFila
+                  key={`${c.alvo}-${c.alvoId}`}
+                  cartao={c}
+                  aoResolver={(a, recarregar) => aoResolver(c, a, recarregar)}
+                />
               ))}
             </ul>
           )}
@@ -129,22 +157,34 @@ export function Admin() {
   )
 }
 
-type CartaoProps = { cartao: Cartao; aoResolver: (aviso?: string) => void }
+type CartaoProps = { cartao: Cartao; aoResolver: (aviso?: string, recarregar?: boolean) => void }
 
 function CartaoDaFila({ cartao, aoResolver }: CartaoProps) {
   const [decisao, setDecisao] = useState<Decisao>()
+  const [partes, setPartes] = useState<Parte[]>(['BIO_E_FOTO'])
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState<string>()
   const foto = fotoDaCopia(cartao.copia)
   const textos = textosDaCopia(cartao.copia)
   const total = cartao.denuncias.length
+  const perfil = cartao.alvo === 'PERFIL'
+  const id = `cartao-${cartao.alvo}-${cartao.alvoId}`
+  const autor = [nomeDoAutor(cartao.autor), bloqueios(cartao.autor.bloqueadaPor)].filter(Boolean).join(' · ')
 
-  async function confirmar(escolhida: Decisao) {
+  function escolher(escolhida?: Decisao) {
+    setErro(undefined)
+    setDecisao(escolhida)
+  }
+
+  async function confirmar(escolhida: Decisao, dados?: DadosDaPunicao) {
     setErro(undefined)
     setEnviando(true)
     try {
-      await (escolhida === 'remover' ? remover : arquivar)(cartao.alvo, cartao.alvoId)
-      aoResolver()
+      if (escolhida === 'arquivar') await arquivar(cartao.alvo, cartao.alvoId)
+      else if (escolhida === 'remover') await remover(cartao.alvo, cartao.alvoId, perfil ? partes : undefined)
+      else if (escolhida === 'suspender' && dados) await suspenderPelaFila(cartao.alvo, cartao.alvoId, dados)
+      else if (dados) await banirPelaFila(cartao.alvo, cartao.alvoId, dados)
+      aoResolver(undefined, escolhida === 'banir')
     } catch (e) {
       if (codigoDoErro(e) === 'SEM_DENUNCIA_ABERTA') {
         aoResolver(mensagemDoErro(e))
@@ -160,8 +200,9 @@ function CartaoDaFila({ cartao, aoResolver }: CartaoProps) {
       <span className="etiqueta">{tipoDoAlvo(cartao.alvo).toUpperCase()}</span>
       <h2>{tituloDoCartao(cartao)}</h2>
       <p className="ajuda">
-        {nomeDoAutor(cartao.autor)} · {total === 1 ? '1 denúncia' : `${total} denúncias`}
+        {autor} · {total === 1 ? '1 denúncia' : `${total} denúncias`}
       </p>
+      {cartao.autor.arroba && <Link para={enderecoDaBusca(cartao.autor.arroba)}>Ver conta</Link>}
       {foto && <img className="foto-denunciada" src={foto} alt="Foto do perfil na hora da denúncia" />}
       {textos.length > 0 && (
         <dl className="copia">
@@ -181,27 +222,48 @@ function CartaoDaFila({ cartao, aoResolver }: CartaoProps) {
           </li>
         ))}
       </ol>
-      {decisao ? (
+      {decisao === 'suspender' || decisao === 'banir' ? (
+        <Punir
+          id={`${id}-${decisao}`}
+          tipo={decisao}
+          arroba={cartao.autor.arroba}
+          peloCartao={{ perfil }}
+          enviando={enviando}
+          aoConfirmar={(dados) => void confirmar(decisao, dados)}
+          aoVoltar={() => escolher(undefined)}
+        />
+      ) : decisao ? (
         <>
-          <p>{textoDaConfirmacao(decisao, cartao.alvo)}</p>
+          {decisao === 'remover' && perfil && (
+            <PartesDoPerfil id={`${id}-partes`} partes={partes} aoMudar={setPartes} desligado={enviando} />
+          )}
+          <p>
+            {decisao === 'remover' && perfil ? textoDaRemocaoDoPerfil(partes) : textoDaConfirmacao(decisao, cartao.alvo)}
+          </p>
           <div className="acoes">
             <button
               type="button"
               className={decisao === 'remover' ? 'perigo' : undefined}
               onClick={() => void confirmar(decisao)}
-              disabled={enviando}
+              disabled={enviando || (decisao === 'remover' && perfil && partes.length === 0)}
             >
               {decisao === 'remover'
                 ? enviando ? 'Removendo…' : 'Confirmar remoção'
                 : enviando ? 'Arquivando…' : 'Confirmar arquivamento'}
             </button>
-            <button type="button" onClick={() => setDecisao(undefined)} disabled={enviando}>Voltar</button>
+            <button type="button" onClick={() => escolher(undefined)} disabled={enviando}>Voltar</button>
           </div>
         </>
       ) : (
         <div className="acoes">
-          <button type="button" onClick={() => setDecisao('arquivar')}>Arquivar</button>
-          <button type="button" className="perigo" onClick={() => setDecisao('remover')}>Remover</button>
+          <button type="button" onClick={() => escolher('arquivar')}>Arquivar</button>
+          <button type="button" className="perigo" onClick={() => escolher('remover')}>Remover</button>
+          {autorPodeSerPunido(cartao.autor) && (
+            <>
+              <button type="button" className="perigo" onClick={() => escolher('suspender')}>Suspender</button>
+              <button type="button" className="perigo" onClick={() => escolher('banir')}>Banir</button>
+            </>
+          )}
         </div>
       )}
       {erro && <p className="erro" role="alert">{erro}</p>}
