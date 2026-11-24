@@ -1,4 +1,5 @@
 import marca from '../../assets/marca-squad.png'
+import { CONTATO_DE_SUPORTE, linkDoSuporte } from '../../core/suporte.ts'
 import { LINK_ANDROID, LINK_IPHONE, MENSAGEM_DO_DONO, WHATSAPP_DA_EQUIPE, linkDoWhatsApp } from './lancamento.ts'
 
 const PARA_QUEM_JOGA = [
@@ -17,6 +18,7 @@ const PARA_QUEM_TEM_QUADRA = [
 ]
 
 const WHATSAPP = linkDoWhatsApp(WHATSAPP_DA_EQUIPE, MENSAGEM_DO_DONO)
+const SUPORTE = linkDoSuporte(CONTATO_DE_SUPORTE, 'Ajuda com a Squad')
 
 function LinkExterno({ para, children }: { para: string; children: string }) {
   return <a className="botao" href={para} target="_blank" rel="noopener noreferrer">{children}</a>
@@ -68,6 +70,7 @@ export function LandingPage() {
           <a href="/termos">Termos de Uso</a>
           <a href="/privacidade">Política de Privacidade</a>
           <a href="/excluir-conta">Excluir conta</a>
+          {SUPORTE && <a href={SUPORTE}>Suporte</a>}
         </nav>
         <p>A Squad é para maiores de 18 anos.</p>
       </footer>
