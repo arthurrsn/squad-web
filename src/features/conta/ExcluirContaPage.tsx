@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { CampoSenha } from '../../core/CampoSenha'
+import { CONTATO_DE_SUPORTE, linkDoSuporte } from '../../core/suporte.ts'
 import { excluirConta, mensagemDaExclusao } from './excluirConta.ts'
 
 const CONSEQUENCIAS = [
@@ -9,6 +10,8 @@ const CONSEQUENCIAS = [
   'Se você tem quadra na Squad, as reservas futuras são canceladas e seus locais saem da busca.',
   'As partidas que já aconteceram continuam no histórico de quem jogou, com "Conta apagada" no seu lugar.',
 ]
+
+const SUPORTE = linkDoSuporte(CONTATO_DE_SUPORTE, 'Excluir minha conta')
 
 /** O link que o Google Play pede para excluir a conta sem o app. Nada fica guardado no navegador. */
 export function ExcluirContaPage() {
@@ -66,6 +69,12 @@ export function ExcluirContaPage() {
         <button type="submit" disabled={enviando}>{enviando ? 'Excluindo…' : 'Excluir minha conta'}</button>
       </form>
       <p>Esqueceu a senha? Troque no app, em Esqueci minha senha.</p>
+      {SUPORTE && (
+        <p>
+          Não consegue entrar, ou sua conta está suspensa? Escreva para <a href={SUPORTE}>{CONTATO_DE_SUPORTE}</a> do
+          e-mail da conta e peça a exclusão.
+        </p>
+      )}
     </main>
   )
 }

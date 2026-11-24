@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { codigoDoErro } from '../../core/api/erros.ts'
 import { navegar, useCaminho } from '../../core/caminho.ts'
-import { banir, buscarConta, encerrarSuspensao, suspender } from './api.ts'
+import { banir, buscarConta, encerrarSuspensao, liberarEmail, suspender } from './api.ts'
 import {
+  CONFIRMAR_LIBERAR,
   buscaDoEndereco,
   enderecoDaBusca,
   fimDaPunicao,
@@ -21,7 +22,7 @@ import { Punir } from './Punir.tsx'
 /** {@code vistaEm} separa, no histórico, a suspensão que ainda vale da que já terminou. */
 type Resultado = { busca: string; conta: Conta | null; vistaEm: Date } | { busca: string; erro: string }
 
-type Acao = 'suspender' | 'banir' | 'encerrar'
+type Acao = 'suspender' | 'banir' | 'encerrar' | 'liberar'
 
 /** A página Contas do /admin: acha a conta pelo @ ou pelo e-mail e a equipe suspende, encerra ou bane (ADR-042). */
 type ContasProps = {
@@ -73,6 +74,15 @@ export function Contas({ aoPerderAcesso, aoPunir }: ContasProps) {
     setErroDaAcao(undefined)
     setEnviando(true)
     try {
+      if (escolhida === 'liberar') {
+        await liberarEmail(conta.userId)
+        setAcao(undefined)
+        setAviso('E-mail liberado. A pessoa já pode criar uma conta nova.')
+        // Sem o e-mail banido, a conta não se acha mais: buscar de novo daria "Nenhuma conta".
+        setTermo('')
+        navegar('/admin/contas', true)
+        return
+      }
       if (escolhida === 'encerrar') await encerrarSuspensao(conta.userId)
       else if (escolhida === 'suspender' && dados) await suspender(conta.userId, dados)
       else if (dados) await banir(conta.userId, dados)
@@ -184,7 +194,21 @@ function FichaDaConta({ conta, vistaEm, acao, enviando, erro, aoEscolher, aoAgir
             <button type="button" onClick={() => aoEscolher(undefined)} disabled={enviando}>Voltar</button>
           </div>
         </>
-      ) : conta.situacao === 'BANIDA' ? null : (
+      ) : acao === 'liberar' ? (
+        <>
+          <p>{CONFIRMAR_LIBERAR}</p>
+          <div className="acoes">
+            <button type="button" className="perigo" onClick={() => aoAgir('liberar')} disabled={enviando}>
+              {enviando ? 'Liberando…' : 'Liberar e-mail'}
+            </button>
+            <button type="button" onClick={() => aoEscolher(undefined)} disabled={enviando}>Voltar</button>
+          </div>
+        </>
+      ) : conta.situacao === 'BANIDA' ? (
+        <div className="acoes">
+          <button type="button" onClick={() => aoEscolher('liberar')}>Liberar e-mail</button>
+        </div>
+      ) : (
         <div className="acoes">
           {conta.situacao === 'SUSPENSA' ? (
             <button type="button" onClick={() => aoEscolher('encerrar')}>Encerrar suspensão</button>
