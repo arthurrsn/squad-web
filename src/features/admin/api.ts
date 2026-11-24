@@ -41,3 +41,5 @@ export const encerrarSuspensao = (userId: string) => del(`/admin/contas/${encode
 
 export const banir = (userId: string, d: DadosDaPunicao) =>
   post<void>(`/admin/contas/${encodeURIComponent(userId)}/banimento`, { motivo: d.motivo, nota: d.nota.trim() || null })
+
+export const liberarEmail = (userId: string) => del(`/admin/contas/${encodeURIComponent(userId)}/banimento`)

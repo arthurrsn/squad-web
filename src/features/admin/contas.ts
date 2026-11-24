@@ -161,3 +161,7 @@ export function textoDoBanimento(arroba: string | null): string {
 export function textoDoEncerramento(arroba: string | null): string {
   return `Encerrar a suspensão de ${quem(arroba)}? Ela volta a entrar agora. O que foi cancelado não volta.`
 }
+
+export const CONFIRMAR_LIBERAR =
+  'Liberar o e-mail desta conta? A pessoa pode criar uma conta nova com ele, do zero. Os dados da conta banida não ' +
+  'voltam, e ela deixa de aparecer na busca.'
